@@ -167,7 +167,7 @@ static ssize_t device_write(struct file *file,
 }
 
 //----------------------------------------------------------------------------
-static long device_ioctl(struct file*   file, unsigned int ioctl_num, int ioctl_param) 
+static long device_ioctl(struct file*   file, unsigned int ioctl_num, unsigned long ioctl_param) 
 {
 	struct message_slot *slot =  get_file_message_slot(file->f_inode->i_ino);
 	if(slot == NULL)
@@ -177,7 +177,7 @@ static long device_ioctl(struct file*   file, unsigned int ioctl_num, int ioctl_
 	}
 	if(ioctl_param<0 || ioctl_param >= NUM_OF_BUFFERS)
 	{
-		printk("invalid index %d\n",ioctl_param);
+		printk("invalid index %ld\n",ioctl_param);
 		return -1;
 	}
 	
