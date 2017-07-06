@@ -12,6 +12,7 @@
 #include <linux/fs.h>       /* for register_chrdev */
 #include <asm/uaccess.h>    /* for get_user and put_user */
 #include <linux/string.h>   /* for memset. NOTE - not string.h!*/
+#include <linux/slab.h> 	/*for kmalloc, kfree*/
 
 MODULE_LICENSE("GPL");
 
@@ -136,7 +137,7 @@ static ssize_t device_read(struct file *file, char __user * buffer, size_t lengt
 static ssize_t device_write(struct file *file, 
 	const char __user * buffer, size_t length, loff_t * offset)
 {
-	int i;
+	int i,j;
 	printk("device_write(%p,%d)\n", file, length);
 	if(buffer == NULL)
 	{
@@ -157,7 +158,7 @@ static ssize_t device_write(struct file *file,
 	
 	for (i = 0; i < length && i < BUFFER_SIZE; i++)
 		get_user(slot->buffers[slot->index][i], buffer + i);
-	for(int j=i; j < BUFFER_SIZE; j++)
+	for(j=i; j < BUFFER_SIZE; j++)
 		slot->buffers[slot->index][i] = 0;
 	
 	return i;
