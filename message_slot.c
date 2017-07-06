@@ -80,10 +80,10 @@ static int delete_message_slot(struct message_slot *slot)
 /* process attempts to open the device file */
 static int device_open(struct inode *inode, struct file *file)
 {
-    unsigned long flags; // for spinlock
     printk("device_open(%p)\n", file);
 
-	struct message_slot *slot =  get_file_message_slot(file->f_inode->i_ino);
+	struct message_slot *slot;
+	slot =  get_file_message_slot(file->f_inode->i_ino);
 	if(slot == NULL)
 	{
 		if(create_message_slot(file->f_inode->i_ino) != SUCCESS)
@@ -116,7 +116,8 @@ static ssize_t device_read(struct file *file, char __user * buffer, size_t lengt
 		printk("buffer is NULL\n");
 		return -1;
 	}
-	struct message_slot *slot =  get_file_message_slot(file->f_inode->i_ino);
+	struct message_slot *slot;
+	slot =  get_file_message_slot(file->f_inode->i_ino);
 	if(slot == NULL)
 	{
 		printk("couldn't find file\n");
@@ -144,7 +145,8 @@ static ssize_t device_write(struct file *file,
 		printk("buffer is NULL\n");
 		return -1;
 	}
-	struct message_slot *slot =  get_file_message_slot(file->f_inode->i_ino);
+	struct message_slot *slot;
+	slot =  get_file_message_slot(file->f_inode->i_ino);
 	if(slot == NULL)
 	{
 		printk("couldn't find file\n");
@@ -165,7 +167,7 @@ static ssize_t device_write(struct file *file,
 }
 
 //----------------------------------------------------------------------------
-static long device_ioctl(struct file*   file, unsigned int ioctl_num, unsigned long  ioctl_param) 
+static long device_ioctl(struct file*   file, unsigned int ioctl_num, int ioctl_param) 
 {
 	struct message_slot *slot =  get_file_message_slot(file->f_inode->i_ino);
 	if(slot == NULL)

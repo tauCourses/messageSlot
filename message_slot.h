@@ -10,7 +10,7 @@
 #define NUM_OF_BUFFERS 4
 #define BUFFER_SIZE 128
 
-#define IOCTL_SET_INDEX _IOW(MAJOR_NUM, 0, unsigned long) /* Set the message of the device driver */
+#define IOCTL_SET_INDEX _IOW(MAJOR_NUM, 0) /* Set the message of the device driver */
 
 #define DEVICE_RANGE_NAME "message_slot"
 #define DEVICE_FILE_NAME "simple_message_slot"
