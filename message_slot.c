@@ -206,9 +206,6 @@ struct file_operations Fops = {
 static int __init simple_init(void)
 {
 	unsigned int rc = 0;
-    /* init dev struct*/
-    memset(&device_info, 0, sizeof(struct chardev_info));
-    spin_lock_init(&device_info.lock);    
 
     /* Register a character device. Get newly assigned major num */
     rc = register_chrdev(MAJOR_NUM, DEVICE_RANGE_NAME, &Fops /* our own file operations struct */);
