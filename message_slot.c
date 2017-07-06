@@ -19,13 +19,13 @@ MODULE_LICENSE("GPL");
 struct message_slot{
 	ino_t file_ino;
 	int index;
-	char buffers[NUM_OF_BUFFER][BUFFER_SIZE];
-	struct message_slot next;
+	char buffers[NUM_OF_BUFFERS][BUFFER_SIZE];
+	struct message_slot* next;
 };
 
 static struct message_slot *root = NULL;
 
-static struct *message_slot get_file_message_slot(ino_t file_ino)
+static struct message_slot* get_file_message_slot(ino_t file_ino)
 {
 	struct message_slot *slot = root;
 	while(slot != NULL)
@@ -110,7 +110,6 @@ static int device_release(struct inode *inode, struct file *file)
 static ssize_t device_read(struct file *file, char __user * buffer, size_t length, loff_t * offset)
 {
 	int i;
-    printk("device_read(%p,%d)\n", file, length, Message);
 	if(buffer == NULL)
 	{
 		printk("buffer is NULL\n");
@@ -128,7 +127,7 @@ static ssize_t device_read(struct file *file, char __user * buffer, size_t lengt
 		return -1;
 	}
 	for (i = 0; i < length && i < BUFFER_SIZE; i++)
-		set_user(buffer[i], slot->buffers[slot->index][i]);
+		put_user(slot->buffers[slot->index][i], buffer + i);
 	
     return i; // invalid argument error
 }
@@ -157,7 +156,7 @@ static ssize_t device_write(struct file *file,
 	}
 	
 	for (i = 0; i < length && i < BUFFER_SIZE; i++)
-		get_user(slot->buffers[slot->index][i], buffer[i]);
+		get_user(slot->buffers[slot->index][i], buffer + i);
 	for(int j=i; j < BUFFER_SIZE; j++)
 		slot->buffers[slot->index][i] = 0;
 	

@@ -1,4 +1,5 @@
 #include "message_slot.h"    
+#include <linux/slab.h>
 
 /* ***** Example w/ minimal error handling - for ease of reading ***** */
 
