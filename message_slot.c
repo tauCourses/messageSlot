@@ -1,13 +1,9 @@
-/* Declare what kind of code we want from the header files
-   Defining __KERNEL__ and MODULE allows us to access kernel-level 
-   code not usually available to userspace programs. */
 #undef __KERNEL__
-#define __KERNEL__ /* We're part of the kernel */
+#define __KERNEL__ /* We're part of the kernel  yayyyy :) :) :)*/
 #undef MODULE
-#define MODULE     /* Not a permanent part, though. */
+#define MODULE     /* Not a permanent part, though. (don't be silly, we can't write permanent part yet)*/
 
-/* ***** Example w/ minimal error handling - for ease of reading ***** */
-
+#define UNDEFINED -1
 //Our custom definitions of IOCTL operations
 #include "message_slot.h"
 
@@ -20,7 +16,6 @@
 MODULE_LICENSE("GPL");
 
 
-
 struct message_slot{
 	ino_t file_ino;
 	int index;
@@ -29,14 +24,6 @@ struct message_slot{
 };
 
 static struct message_slot *root = NULL;
-
-static int dev_open_flag = 0; /* used to prevent concurent access into the same device */
-
-static int encryption_flag = 0; /*Do we need to encrypt?*/
-
-
-
-
 
 static struct *message_slot get_file_message_slot(ino_t file_ino)
 {
@@ -59,7 +46,7 @@ static int create_message_slot(ino_t file_ino)
 		return -1;
 	}
 	slot->file_ino = file_ino;
-	slot->index = -1;
+	slot->index = UNDEFINED; 
 	slot->next = root;
 	root = slot;
 	return SUCCESS;
@@ -84,7 +71,7 @@ static int delete_message_slot(struct message_slot *slot)
 		temp->next = temp->next->next;
 	}
 	
-	free(slot);
+	kfree(slot);
 	return SUCCESS;
 }
 
@@ -109,18 +96,17 @@ static int device_release(struct inode *inode, struct file *file)
 {
     printk("device_release(%p,%p)\n", inode, file);
 
-	struct message_slot *slot =  get_file_message_slot(file->f_inode->i_ino);
+	/*struct message_slot *slot =  get_file_message_slot(file->f_inode->i_ino);
 	if(slot == NULL)
 	{
 		printk("unknown file\n");
 		return -1;
 	}
 	
-	return delete_message_slot(slot);
+	return delete_message_slot(slot);*/
+	return SUCCESS;
 }
 
-/* a process which has already opened 
-   the device file attempts to read from it */
 static ssize_t device_read(struct file *file, char __user * buffer, size_t length, loff_t * offset)
 {
 	int i;
@@ -136,7 +122,7 @@ static ssize_t device_read(struct file *file, char __user * buffer, size_t lengt
 		printk("couldn't find file\n");
 		return -1;
 	}
-	if(slot->index == -1)
+	if(slot->index == UNDEFINED)
 	{
 		printk("message_slot index never initialized\n");
 		return -1;
@@ -164,7 +150,7 @@ static ssize_t device_write(struct file *file,
 		printk("couldn't find file\n");
 		return -1;
 	}
-	if(slot->index == -1)
+	if(slot->index == UNDEFINED)
 	{
 		printk("message_slot index never initialized\n");
 		return -1;
@@ -250,6 +236,8 @@ static int __init simple_init(void)
 /* Cleanup - unregister the appropriate file from /proc */
 static void __exit simple_cleanup(void)
 {
+	while(root != NULL) //free all the data 
+		delete_message_slot(root);
     /* 
      * Unregister the device 
      * should always succeed (didnt used to in older kernel versions)

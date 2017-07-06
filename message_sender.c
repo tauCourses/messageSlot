@@ -11,7 +11,7 @@
 int main( int argc, char *argv[] )  
 {
 	int file_desc, ret_val, index;
-	if(argc != 2)
+	if(argc != 3)
 	{
 		printf("Invalid number of arguments\n");
 		exit(-1);
@@ -24,19 +24,21 @@ int main( int argc, char *argv[] )
 		exit(-1);
 	}
 	
-	index = atoi(argv[0]); 
+	index = atoi(argv[1]); 
 	ret_val = ioctl(file_desc, IOCTL_SET_INDEX, index);
 	if (ret_val < 0) 
 	{
 		 printf ("ioctl set index failed:%d\n", ret_val);
+		 close(file_desc); 
 		 exit(-1);
 	}	 
 	
 
-	ret_val = write(file_desc, argv[1], strlen(argv[1]));
+	ret_val = write(file_desc, argv[2], strlen(argv[2]));
 
 	if (ret_val < 0) {
 		printf ("ioctl_set_msg failed:%d\n", ret_val);
+		close(file_desc); 
 		exit(-1);
 	}	 
 	
