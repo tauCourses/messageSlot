@@ -40,7 +40,7 @@ static struct message_slot* get_file_message_slot(ino_t file_ino)
 
 static int create_message_slot(ino_t file_ino)
 {
-	struct message_slot *slot = (struct message_slot*) kmalloc(sizeof(struct message_slot));
+	struct message_slot *slot = (struct message_slot*) kmalloc(sizeof(struct message_slot), GFP_KERNEL);
 	if(slot == NULL)
 	{
 		printk("failed to malloc new message slot\n");
