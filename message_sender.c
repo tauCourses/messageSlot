@@ -13,13 +13,16 @@
 int main( int argc, char *argv[] )  
 {
 	int file_desc, ret_val, index;
-	if(argc != 3)
+	if(argc < 3)
 	{
 		printf("Invalid number of arguments\n");
 		exit(-1);
 	}
+	if(argc == 3)
+		file_desc = open("/dev/"DEVICE_FILE_NAME, O_RDWR, 0666);
+	else
+		file_desc = open(argv[3], O_RDWR, 0666);
 	
-	file_desc = open("/dev/"DEVICE_FILE_NAME, O_RDWR, 0777);
 	if (file_desc < 0) 
 	{
 		printf ("Can't open device file: %s\n", DEVICE_FILE_NAME);

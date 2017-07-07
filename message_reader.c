@@ -7,17 +7,21 @@
 #include <sys/ioctl.h>  /* ioctl */
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 int main( int argc, char *argv[] )  
 {
 	int file_desc, ret_val, index;
-	if(argc != 2)
+	if(argc < 2)
 	{
 		printf("Invalid number of arguments\n");
 		exit(-1);
 	}
-	
-	file_desc = open("/dev/"DEVICE_FILE_NAME, 0);
+	if(argc == 2)
+		file_desc = open("/dev/"DEVICE_FILE_NAME, 0);
+	else
+		file_desc = open(argv[2], 0);
+		
 	if (file_desc < 0) 
 	{
 		printf ("Can't open device file: %s\n", DEVICE_FILE_NAME);
@@ -43,6 +47,6 @@ int main( int argc, char *argv[] )
 	}	 
 	
 	close(file_desc); 
-	printf("read the message:\n %s\n from channel %d\n",tempBuf, index);
+	printf("read the message:\n%s\nfrom channel %d\n",tempBuf, index);
 	return 0;
 }

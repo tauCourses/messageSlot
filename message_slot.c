@@ -81,9 +81,7 @@ static int delete_message_slot(struct message_slot *slot)
 /* process attempts to open the device file */
 static int device_open(struct inode *inode, struct file *file)
 {
-	struct message_slot *slot;
-	
-	slot =  get_file_message_slot(file->f_inode->i_ino);
+	struct message_slot *slot =  get_file_message_slot(file->f_inode->i_ino);
 	if(slot == NULL)
 	{
 		printk("create a message slot data structure for file %ld\n",file->f_inode->i_ino);
@@ -104,27 +102,28 @@ static int device_release(struct inode *inode, struct file *file)
 static ssize_t device_read(struct file *file, char __user * buffer, size_t length, loff_t * offset)
 {
 	int i;
-	struct message_slot *slot;
-		
-	if(buffer == NULL)
-	{
-		printk("buffer is NULL\n");
-		return -1;
-	}
-	slot =  get_file_message_slot(file->f_inode->i_ino);
+	struct message_slot *slot = get_file_message_slot(file->f_inode->i_ino);
 	if(slot == NULL)
 	{
 		printk("couldn't find file\n");
 		return -1;
 	}
+	
 	if(slot->index == UNDEFINED)
 	{
 		printk("message_slot index never initialized\n");
-		return -1;
+		return -2;
 	}
-	for (i = 0; i < length && i < BUFFER_SIZE; i++)
-		put_user(slot->buffers[slot->index][i], buffer + i);
 	
+	
+	for (i = 0; i < length && i < BUFFER_SIZE; i++)
+	{
+		if(put_user(slot->buffers[slot->index][i], buffer + i) == -EFAULT)
+		{
+			printk("failed to write to user address %p\n", buffer + i);
+			return -3;		
+		}
+	}
     return i; // invalid argument error
 }
 
@@ -132,15 +131,7 @@ static ssize_t device_read(struct file *file, char __user * buffer, size_t lengt
 static ssize_t device_write(struct file *file, 	const char __user * buffer, size_t length, loff_t * offset)
 {
 	int i,j;
-	struct message_slot *slot;
-	
-	if(buffer == NULL)
-	{
-		printk("buffer is NULL\n");
-		return -1;
-	}
-	
-	slot = get_file_message_slot(file->f_inode->i_ino);
+	struct message_slot *slot = get_file_message_slot(file->f_inode->i_ino);
 	if(slot == NULL)
 	{
 		printk("couldn't find file\n");
@@ -150,11 +141,16 @@ static ssize_t device_write(struct file *file, 	const char __user * buffer, size
 	if(slot->index == UNDEFINED)
 	{
 		printk("message_slot index never initialized\n");
-		return -1;
+		return -2;
 	}
 	
 	for (i = 0; i < length && i < BUFFER_SIZE; i++)
-		get_user(slot->buffers[slot->index][i], buffer + i);
+	{
+		if(get_user(slot->buffers[slot->index][i], buffer + i) == -EFAULT)
+		{
+			printk("failed to read from user address %p\n",buffer+i);
+		}
+	}
 	for(j=i; j < BUFFER_SIZE; j++)
 		slot->buffers[slot->index][i] = 0;
 	
@@ -170,15 +166,15 @@ static long device_ioctl(struct file*   file, unsigned int ioctl_num, unsigned l
 		printk("couldn't find file\n");
 		return -1;
 	}
-	if(ioctl_param<0 || ioctl_param >= NUM_OF_BUFFERS)
-	{
-		printk("invalid index %ld\n",ioctl_param);
-		return -1;
-	}
 	
 	if(IOCTL_SET_INDEX == ioctl_num) 
 	{
-	
+		if(ioctl_param<0 || ioctl_param >= NUM_OF_BUFFERS)
+		{
+			printk("invalid index %ld\n",ioctl_param);
+			return -2;
+		}
+		
 		printk("message slot ioctl: set index to %ld\n", ioctl_param);
 		slot->index = ioctl_param;
 	}
@@ -229,9 +225,10 @@ static int __init simple_init(void)
 /* Cleanup - unregister the appropriate file from /proc */
 static void __exit simple_cleanup(void)
 {
-	while(root != NULL) //free all the data 
+	while(root != NULL) //free all the message slot data structure 
 		delete_message_slot(root);
-    /* 
+ 
+	/* 
      * Unregister the device 
      * should always succeed (didnt used to in older kernel versions)
      */
