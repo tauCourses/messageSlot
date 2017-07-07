@@ -7,6 +7,8 @@
 #include <sys/ioctl.h>  /* ioctl */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
 int main( int argc, char *argv[] )  
 {
@@ -17,7 +19,7 @@ int main( int argc, char *argv[] )
 		exit(-1);
 	}
 	
-	file_desc = open("/dev/"DEVICE_FILE_NAME, 0);
+	file_desc = open("/dev/"DEVICE_FILE_NAME, O_RDWR, 0777);
 	if (file_desc < 0) 
 	{
 		printf ("Can't open device file: %s\n", DEVICE_FILE_NAME);
@@ -33,16 +35,14 @@ int main( int argc, char *argv[] )
 		 exit(-1);
 	}	 
 	
-
 	ret_val = write(file_desc, argv[2], strlen(argv[2]));
-
 	if (ret_val < 0) {
-		printf ("ioctl_set_msg failed:%d\n", ret_val);
+		printf("write to file failed:%d - %s\n", ret_val, strerror(errno));
 		close(file_desc); 
 		exit(-1);
 	}	 
 	
 	close(file_desc); 
-	printf("A status message\n"); //just kidding, please don't kill me :)
+	printf("%d chars from the message:\n%s\nwrote to channel %d\n",ret_val,argv[2],index); 
 	return 0;
 }

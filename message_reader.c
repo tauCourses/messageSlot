@@ -1,5 +1,4 @@
 #include "message_slot.h"    
-#include <linux/slab.h>
 
 /* ***** Example w/ minimal error handling - for ease of reading ***** */
 
@@ -12,7 +11,7 @@
 int main( int argc, char *argv[] )  
 {
 	int file_desc, ret_val, index;
-	if(argc != 1)
+	if(argc != 2)
 	{
 		printf("Invalid number of arguments\n");
 		exit(-1);
@@ -44,7 +43,6 @@ int main( int argc, char *argv[] )
 	}	 
 	
 	close(file_desc); 
-	printf("%d\n",temoBuf);
-	printf("and a status message\n"); //just kidding, please don't kill me :)
+	printf("read the message:\n %s\n from channel %d\n",tempBuf, index);
 	return 0;
 }

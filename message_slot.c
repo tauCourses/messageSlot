@@ -4,6 +4,7 @@
 #define MODULE     /* Not a permanent part, though. (don't be silly, we can't write permanent part yet)*/
 
 #define UNDEFINED -1
+
 //Our custom definitions of IOCTL operations
 #include "message_slot.h"
 
@@ -80,12 +81,12 @@ static int delete_message_slot(struct message_slot *slot)
 /* process attempts to open the device file */
 static int device_open(struct inode *inode, struct file *file)
 {
-    printk("device_open(%p)\n", file);
-
 	struct message_slot *slot;
+	
 	slot =  get_file_message_slot(file->f_inode->i_ino);
 	if(slot == NULL)
 	{
+		printk("create a message slot data structure for file %ld\n",file->f_inode->i_ino);
 		if(create_message_slot(file->f_inode->i_ino) != SUCCESS)
 			return -1;
 	}
@@ -97,26 +98,19 @@ static int device_release(struct inode *inode, struct file *file)
 {
     printk("device_release(%p,%p)\n", inode, file);
 
-	/*struct message_slot *slot =  get_file_message_slot(file->f_inode->i_ino);
-	if(slot == NULL)
-	{
-		printk("unknown file\n");
-		return -1;
-	}
-	
-	return delete_message_slot(slot);*/
 	return SUCCESS;
 }
 
 static ssize_t device_read(struct file *file, char __user * buffer, size_t length, loff_t * offset)
 {
 	int i;
+	struct message_slot *slot;
+		
 	if(buffer == NULL)
 	{
 		printk("buffer is NULL\n");
 		return -1;
 	}
-	struct message_slot *slot;
 	slot =  get_file_message_slot(file->f_inode->i_ino);
 	if(slot == NULL)
 	{
@@ -135,23 +129,24 @@ static ssize_t device_read(struct file *file, char __user * buffer, size_t lengt
 }
 
 /* somebody tries to write into our device file */
-static ssize_t device_write(struct file *file, 
-	const char __user * buffer, size_t length, loff_t * offset)
+static ssize_t device_write(struct file *file, 	const char __user * buffer, size_t length, loff_t * offset)
 {
 	int i,j;
-	printk("device_write(%p,%d)\n", file, length);
+	struct message_slot *slot;
+	
 	if(buffer == NULL)
 	{
 		printk("buffer is NULL\n");
 		return -1;
 	}
-	struct message_slot *slot;
-	slot =  get_file_message_slot(file->f_inode->i_ino);
+	
+	slot = get_file_message_slot(file->f_inode->i_ino);
 	if(slot == NULL)
 	{
 		printk("couldn't find file\n");
 		return -1;
 	}
+	
 	if(slot->index == UNDEFINED)
 	{
 		printk("message_slot index never initialized\n");
@@ -187,7 +182,6 @@ static long device_ioctl(struct file*   file, unsigned int ioctl_num, unsigned l
 		printk("message slot ioctl: set index to %ld\n", ioctl_param);
 		slot->index = ioctl_param;
 	}
-
 	return SUCCESS;
 }
 
@@ -222,7 +216,7 @@ static int __init simple_init(void)
         return -1;
     }
 
-    printk("Registeration is a success. The major device number is %d.\n", MAJOR_NUM);
+    printk("Registeration is a success 1. The major device number is %d.\n", MAJOR_NUM);
     printk("If you want to talk to the device driver,\n");
     printk("you have to create a device file:\n");
     printk("mknod /dev/%s c %d 0\n", DEVICE_FILE_NAME, MAJOR_NUM);
