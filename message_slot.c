@@ -94,9 +94,7 @@ static int device_open(struct inode *inode, struct file *file)
 
 static int device_release(struct inode *inode, struct file *file)
 {
-    printk("device_release(%p,%p)\n", inode, file);
-
-	return SUCCESS;
+    return SUCCESS;
 }
 
 static ssize_t device_read(struct file *file, char __user * buffer, size_t length, loff_t * offset)
@@ -175,7 +173,6 @@ static long device_ioctl(struct file*   file, unsigned int ioctl_num, unsigned l
 			return -2;
 		}
 		
-		printk("message slot ioctl: set index to %ld\n", ioctl_param);
 		slot->index = ioctl_param;
 	}
 	return SUCCESS;
@@ -226,7 +223,7 @@ static int __init simple_init(void)
 static void __exit simple_cleanup(void)
 {
 	while(root != NULL) //free all the message slot data structure 
-		delete_message_slot(root);
+		delete_message_slot(root); //delete the first and update root
  
 	/* 
      * Unregister the device 
