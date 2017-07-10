@@ -25,7 +25,7 @@ int main( int argc, char *argv[] )
 	
 	if (file_desc < 0) 
 	{
-		printf ("Can't open device file: %s\n", DEVICE_FILE_NAME);
+		printf ("Can't open device file\n");
 		exit(-1);
 	}
 	
