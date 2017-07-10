@@ -19,9 +19,9 @@ int main( int argc, char *argv[] )
 		exit(-1);
 	}
 	if(argc == 3)
-		file_desc = open("/dev/"DEVICE_FILE_NAME, O_RDWR, 0666);
+		file_desc = open("/dev/"DEVICE_FILE_NAME, O_WRONLY);
 	else
-		file_desc = open(argv[3], O_RDWR, 0666);
+		file_desc = open(argv[3], O_WRONLY);
 	
 	if (file_desc < 0) 
 	{
