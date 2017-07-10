@@ -147,10 +147,11 @@ static ssize_t device_write(struct file *file, 	const char __user * buffer, size
 		if(get_user(slot->buffers[slot->index][i], buffer + i) == -EFAULT)
 		{
 			printk("failed to read from user address %p\n",buffer+i);
+			return -3;
 		}
 	}
 	for(j=i; j < BUFFER_SIZE; j++)
-		slot->buffers[slot->index][i] = 0;
+		slot->buffers[slot->index][j] = 0;
 	
 	return i;
 }
